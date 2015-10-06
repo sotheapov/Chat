@@ -21,6 +21,10 @@
   body{
     font-family:arial,sans-serif;
   }
+  .container{
+       margin: 20px auto;
+       width: 500px;
+  }
   .chat-container {
     width: 300px;
     margin: 20px auto;
@@ -208,49 +212,62 @@
     opacity: 0.5;
   }
 }
+.user-container{
+    float:left;
+}
+#user-list li{
+    display:block;
+}
 </style>
 </head>
 <body>
-  <section class='chat-container'>
-    <header class='top-header'>
-      <div class='left'>
-        <span class='icon typicons-message'></span>
-        <span class='top-header-tit'>My Friend</span>
-      </div>
-      <div class='right'>
-        <span class='icon typicons-minus'></span>
-        <span class='icon typicons-times'></span>
-      </div>
-    </header>
+    <div class="container">    
+        <section class='chat-container' style="float:left;">
+          <header class='top-header'>
+            <div class='left'>
+              <span class='icon typicons-message'></span>
+              <span class='top-header-tit'>My Friend</span>
+            </div>
+            <div class='right'>
+              <span class='icon typicons-minus'></span>
+              <span class='icon typicons-times'></span>
+            </div>
+          </header>
 
-    <div class="setting">
-     <div class='left'>
-      <span class='fontawesome-facetime-video'></span>
-      <span class='iconicstroke-user'></span>
-    </div>
-    <div class='right'>
-      <span class='typicons-cog'></span>
-    </div>
-  </div>
+          <div class="setting">
+           <div class='left'>
+            <span class='fontawesome-facetime-video'></span>
+            <span class='iconicstroke-user'></span>
+          </div>
+          <div class='right'>
+            <span class='typicons-cog'></span>
+          </div>
+        </div>
 
-  <ol class='chat-box' id="chatBox">
-      
-  </ol>
-    
-   <div class="user-containter">
-        <form id="userForm">
-            <input type="text" placeholder="Input your name!!" size="30" id="userBox">
-            <input type="submit" value="Join">
-        </form>
+        <ol class='chat-box' id="chatBox">
+
+        </ol>
+
+         <div class="user-containter">
+              <form id="userForm">
+                  <input type="text" placeholder="Input your name!!" size="30" id="userBox">
+                  <input type="submit" value="Join">
+              </form>
+          </div>   
+         <div class="send-Containter">        
+             <form id="sendForm">
+                 <input id="sendBox" size="30">
+                 <input type="submit" value="Send">
+             </form>
+         </div>
+
+      </section> 
+      <section class='user-container'>
+          <div>Online</div>
+          <ul id="user-list"> 
+          </ul>
+      </section>
     </div>   
-   <div class="send-Containter">        
-       <form id="sendForm">
-           <input id="sendBox" size="30">
-           <input type="submit" value="Send">
-       </form>
-   </div>
-      
-</section>    
     <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript">
@@ -263,9 +280,18 @@
                 userCon     =   $('.user-containter'),
                 userForm    =   $('#userForm'),
                 userBox     =   $('#userBox'),
+                userList    =   $('#user-list'),
                 socket      =   io.connect();
                 
                 //auto load
+                //get all user
+                socket.on('all user', function(data){
+                    var html = '';
+                   for(var i = 0; i<data.length; i++){
+                       html += "<li>"+ data[i] +"</li>";
+                   }
+                   userList.html(html);
+                });     
                 
                 //die for chat form
                 sendCon.hide()
@@ -273,10 +299,15 @@
                 //user controller
                 userForm.submit(function(e){
                    e.preventDefault();
-                   socket.emit('user join', userBox.val());
-                   userBox.val('');
-                   userCon.hide();
-                   sendCon.show();
+                   socket.emit('user join', userBox.val(),function(data)
+                   {
+                       if(data){                           
+                        userCon.hide();
+                        sendCon.show();
+                       }                      
+                   });
+                    userBox.val('');
+                    sendBox.focus();
                 });
                 
                 sendForm.submit(function(e){
@@ -285,11 +316,7 @@
                     socket.emit('send message',sendBox.val());
                     //clear data
                     sendBox.val('');
-                });
-                //get new user
-                socket.on('new user', function(data){
-                    
-                });
+                });                          
                 
                 //get new message
                 socket.on('new message', function(data){
