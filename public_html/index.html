@@ -33,7 +33,7 @@
     overflow: hidden;
     border-bottom: 4px solid #35ac19;
   }
-  .send-Containter {
+  .send-Containter, .user-containter {
     background: #666;
     color: white;
     padding: 0.2rem;
@@ -91,7 +91,7 @@
     list-style: none;
     background: #e5e5e5;
     margin: 0;
-    padding: 0 0 50px 0;
+    padding: 0 10px 50px 10px;
     height: 280px;
     overflow-y: auto;
   }
@@ -100,8 +100,8 @@
     overflow: hidden;
     display: flex;
   }
-  .chat-box .avatar-icon {
-    width: 40px;
+  .chat-box .avatar-icon { 
+    padding-right: 10px;
     position: relative;
   }
   .chat-box .avatar-icon img {
@@ -234,42 +234,82 @@
   </div>
 
   <ol class='chat-box' id="chatBox">
-   
-    <li class='another'>
-      <div class='avatar-icon'>
-        <img src='icon1.png'>
-      </div>
-      <div class='messages'>
-        <p>hi how are you. When you come to home.</p>
-        <time datetime='2009-11-13T20:00'>Timothy • 51 min</time>
-      </div>
-    </li>
-    
-    <li class='me'>
-      <div class='avatar-icon'>
-        <img src='icon2.png'>
-      </div>
-      <div class='messages'>
-        <p>Hi fine bro.</p>
-        <p>Tomorrow morning i will rech.</p>
-        <time datetime='2009-11-13T20:14'>37 mins</time>
-      </div>
-    </li>  
-    
-  </ol>
       
-   <div class="send-Containter"> 
+  </ol>
+    
+   <div class="user-containter">
+        <form id="userForm">
+            <input type="text" placeholder="Input your name!!" size="30" id="userBox">
+            <input type="submit" value="Join">
+        </form>
+    </div>   
+   <div class="send-Containter">        
        <form id="sendForm">
            <input id="sendBox" size="30">
            <input type="submit" value="Send">
        </form>
    </div>
-</section>
-    
+      
+</section>    
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript">
-        var sendForm        = $('#sendForm'),
-            sendBox         = $('#sendBox'),
-            chatBox         = $('#chatBox')            
+        //anonymouse function
+        jQuery(function(){
+            var sendForm    =   $('#sendForm'),
+                sendBox     =   $('#sendBox'),
+                chatBox     =   $('#chatBox'),
+                sendCon     =   $('.send-Containter'),
+                userCon     =   $('.user-containter'),
+                userForm    =   $('#userForm'),
+                userBox     =   $('#userBox'),
+                socket      =   io.connect();
+                
+                //auto load
+                
+                //die for chat form
+                sendCon.hide()
+                
+                //user controller
+                userForm.submit(function(e){
+                   e.preventDefault();
+                   socket.emit('user join', userBox.val());
+                   userBox.val('');
+                   userCon.hide();
+                   sendCon.show();
+                });
+                
+                sendForm.submit(function(e){
+                    e.preventDefault();
+                    //send to server
+                    socket.emit('send message',sendBox.val());
+                    //clear data
+                    sendBox.val('');
+                });
+                //get new user
+                socket.on('new user', function(data){
+                    
+                });
+                
+                //get new message
+                socket.on('new message', function(data){
+                    displayMessage(data);
+                });
+                
+                function displayMessage(data)
+                {
+                    var html = "<li class='another'>" +
+                                   "<div class='avatar-icon'>" +
+                                       data.user +
+                                   "</div>" +
+                                   "<div class='messages'>" +
+                                    "<p>" + data.smg + "</p>"+
+                                     "<time datetime='2009-11-13T20:00'>Timothy • 51 min</time>"+
+                                   "</div>" +
+                                 "</li>";
+                    chatBox.append(html);
+                }
+        });   
     </script>    
 </body>
 </html>
