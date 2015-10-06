@@ -7,5 +7,5 @@ server.listen(3000);
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
-  asff
+  console.log('Now server is running');
 });
