@@ -218,6 +218,11 @@
 #user-list li{
     display:block;
 }
+.user-join
+{
+    height:20px;
+    background-color:tan;
+}
 </style>
 </head>
 <body>
@@ -302,12 +307,12 @@
                    socket.emit('user join', userBox.val(),function(data)
                    {
                        if(data){                           
-                        userCon.hide();
-                        sendCon.show();
+                        userCon.hide(); 
+                        sendCon.show();      
+                        sendBox.focus();
                        }                      
                    });
                     userBox.val('');
-                    sendBox.focus();
                 });
                 
                 sendForm.submit(function(e){
@@ -317,10 +322,25 @@
                     //clear data
                     sendBox.val('');
                 });                          
+                //new user join
+                socket.on('new user', function(data){
+                    chatBox.append('<span class=user-join>'+ data + ' has join!</span><br>');
+                });
+                
+                //new user disconnect
+                socket.on('user disconnet', function(data){
+                    chatBox.append('<span class=user-join>'+ data + ' has left!</span><br>');
+                });
                 
                 //get new message
                 socket.on('new message', function(data){
                     displayMessage(data);
+                });
+                
+                socket.on('old message', function(data){
+                   for(var i=0; i<data.length; i++){
+                       displayMessage(data[i]);
+                   }
                 });
                 
                 function displayMessage(data)
@@ -330,7 +350,7 @@
                                        data.user +
                                    "</div>" +
                                    "<div class='messages'>" +
-                                    "<p>" + data.smg + "</p>"+
+                                    "<p>" + data.text + "</p>"+
                                      "<time datetime='2009-11-13T20:00'>Timothy • 51 min</time>"+
                                    "</div>" +
                                  "</li>";
